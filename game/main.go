@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/fatih/color"
 	"os"
 	"os/exec"
 	"strconv"
@@ -54,15 +55,18 @@ func main() {
 }
 
 func drawBoard(board [9]int) {
+	botColor := color.New(color.FgHiRed)
+	playerColor := color.New(color.FgHiGreen)
 
+	flushBoard()
 	for i, v := range board {
 		if v == 0 {
 			// empty space. Display number
 			fmt.Printf("%d", i)
 		} else if v == 1 {
-			fmt.Printf("X")
+			botColor.Printf("X")
 		} else if v == 10 {
-			fmt.Printf("O")
+			playerColor.Printf("O")
 		}
 		// And now the decorations
 		if i > 0 && (i+1)%3 == 0 {
@@ -71,6 +75,10 @@ func drawBoard(board [9]int) {
 			fmt.Printf(" | ")
 		}
 	}
+}
+
+func flushBoard() {
+	print("\033[H\033[2J")
 }
 
 func promptForMove() int {
@@ -146,7 +154,7 @@ func botMove(currentTurn int, player int, board [9]int) int {
 
 	if player == 2 {
 		winnings := winningPossibilities(board)
-		for i, _ := range winnings {
+		for i := range winnings {
 			if winnings[i] == 20 {
 				possible := possibleSelections(i)
 
@@ -181,7 +189,7 @@ func botMove(currentTurn int, player int, board [9]int) int {
 		canWeWin := false
 
 		winnings := winningPossibilities(board)
-		for i, _ := range winnings {
+		for i := range winnings {
 			if winnings[i] == 2 {
 
 				fmt.Println("We have a possibillity to win")
@@ -214,7 +222,7 @@ func botMove(currentTurn int, player int, board [9]int) int {
 		}
 	}
 
-	for i, _ := range board {
+	for i := range board {
 		if board[i] == 0 {
 			executeMove(i, player, board)
 			return i
