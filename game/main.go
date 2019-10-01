@@ -58,7 +58,6 @@ func drawBoard(board [9]int) {
 	botColor := color.New(color.FgHiRed)
 	playerColor := color.New(color.FgHiGreen)
 
-	flushBoard()
 	for i, v := range board {
 		if v == 0 {
 			// empty space. Display number
@@ -75,10 +74,6 @@ func drawBoard(board [9]int) {
 			fmt.Printf(" | ")
 		}
 	}
-}
-
-func flushBoard() {
-	print("\033[H\033[2J")
 }
 
 func promptForMove() int {
