@@ -1,0 +1,96 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  TicTacToe-Lambda
+
+  SAM app to play Tic Tac Toe using AWS Lambda
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Api:
+    Cors:
+      AllowMethods: "'OPTIONS,POST,GET'"
+      AllowHeaders: "'Content-Type'"
+      AllowOrigin: "'*'"
+  Function:
+    Timeout: 1 # Timeout after 1 seconds
+    Environment:
+      Variables:
+        AWSRegion: "eu-north-1"
+        S3Bucket: ""
+Resources:
+
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - edgelambda.amazonaws.com
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      RoleName: !Ref AWS::StackName
+
+  Policy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Ref AWS::StackName
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: arn:aws:logs:*:*:*
+          - Effect: Allow
+            Action:
+              - s3:PutObject
+              - s3:GetObject
+              - s3:ListAllMyBuckets
+              - s3:ListBucket
+              - s3:ListObjects
+              - s3:CreateBucket
+              - s3:GetLifecycleConfiguration
+              - s3:PutLifecycleConfiguration
+            Resource: awn:aws:s3:::*
+          - Effect: Allow
+            Action:
+              - xray:PutTraceSegments
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - lambda:InvokeFunction
+            Resource: "*"
+      Roles:
+        - Ref: Role
+    DependsOn:
+      - Role
+
+
+  MakeDrawFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: !Join [" ", ["Lambda for version.", "!Ref Version"]]
+      FunctionName: !Join [ "-", [!Ref 'AWS::StackName', "MakeDraw"]]
+      Role: !GetAtt Role.Arn
+      CodeUri: game/
+      Handler: api
+      Runtime: go1.x
+      Tracing: Active
+      MemorySize: 128
+      Timeout: 1
+      ReservedConcurrentExecutions: 1
+      Events:
+        MakeDrawApi:
+          Type: Api
+          Properties:
+            Path: /draw
+            Method: POST
+    DependsOn:
+      - Policy

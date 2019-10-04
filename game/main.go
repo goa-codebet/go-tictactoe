@@ -187,8 +187,6 @@ func botMove(currentTurn int, player int, board [9]int) int {
 		for i := range winnings {
 			if winnings[i] == 2 {
 
-				fmt.Println("We have a possibillity to win")
-
 				// select the third to win
 				possible := possibleSelections(i)
 
