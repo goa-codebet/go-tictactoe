@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/fatih/color"
 	"os"
 	"os/exec"
 	"strconv"
+
+	"github.com/fatih/color"
 )
 
 func main() {
@@ -30,9 +31,6 @@ func main() {
 		} else {
 			fmt.Println("Player " + strconv.Itoa(player) + " turn")
 			selectedMove = promptForMove()
-		}
-		if selectedMove == 9 {
-			return
 		}
 
 		board = executeMove(selectedMove, player, board)
@@ -77,7 +75,7 @@ func drawBoard(board [9]int) {
 }
 
 func promptForMove() int {
-	fmt.Println("Select a move")
+	fmt.Println("Select a move [0-8]")
 	var move int
 	fmt.Scan(&move)
 
@@ -85,6 +83,11 @@ func promptForMove() int {
 }
 
 func executeMove(currentMove int, player int, board [9]int) [9]int {
+	for currentMove > 8 {
+		fmt.Println("Please select a tile that exists. There are only 9 tiles.")
+		currentMove = promptForMove()
+	}
+
 	if board[currentMove] != 0 {
 		fmt.Println("That tile (" + strconv.Itoa(currentMove) + ") is already selected. Please select another one.")
 		currentMove := promptForMove()
@@ -93,11 +96,6 @@ func executeMove(currentMove int, player int, board [9]int) [9]int {
 		board[currentMove] = 1
 	} else if player == 2 {
 		board[currentMove] = 10
-	}
-
-	for currentMove > 9 {
-		fmt.Println("Please select a tile that exists. There are only 9 tiles.")
-		currentMove = promptForMove()
 	}
 
 	return board
