@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strconv"
@@ -14,9 +15,11 @@ func main() {
 	gameOver := false
 	board := [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}
 	turn := 1
+	lastWinner := getLastWinner()
 
 	for gameOver != true {
 		drawBoard(board)
+
 		player := 0
 
 		if turn%2 == 1 {
@@ -38,6 +41,10 @@ func main() {
 		result := checkBoardForAWinner(board)
 		if result > 0 {
 			fmt.Printf("Player %d wins!\n\n", result)
+
+			// Save to last winner file
+			setLastWinner(result)
+
 			gameOver = true
 		} else if turn == 9 {
 			// Tie game example: 0 2 1 3 4 7 5 8 6
@@ -48,6 +55,10 @@ func main() {
 			cmd := exec.Command("clear") //Linux example, its tested
 			cmd.Stdout = os.Stdout
 			cmd.Run()
+		}
+
+		if lastWinner > 0 {
+			fmt.Printf("Player %d won the last game!\n\n", lastWinner)
 		}
 	}
 }
@@ -76,6 +87,7 @@ func drawBoard(board [9]int) {
 
 func promptForMove() int {
 	fmt.Println("Select a move [0-8]")
+
 	var move int
 	fmt.Scan(&move)
 
@@ -247,4 +259,23 @@ func possibleSelections(iteration int) [3]int {
 	}
 
 	return [3]int{0, 0, 0}
+}
+
+func setLastWinner(player int) {
+	s := fmt.Sprintf("%d", player)
+	ioutil.WriteFile("last-winner", []byte(s), 0644)
+}
+
+func getLastWinner() int {
+	content, err := ioutil.ReadFile("last-winner")
+	if err != nil {
+		return 0
+	}
+
+	player, err := strconv.Atoi(string(content))
+	if err != nil {
+		return 0
+	}
+
+	return player
 }
