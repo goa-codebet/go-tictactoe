@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/fatih/color"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strconv"
+
+	"github.com/fatih/color"
 )
 
 func main() {
@@ -13,9 +15,11 @@ func main() {
 	gameOver := false
 	board := [9]int{0, 0, 0, 0, 0, 0, 0, 0, 0}
 	turn := 1
+	lastWinner := getLastWinner()
 
 	for gameOver != true {
 		drawBoard(board)
+
 		player := 0
 
 		if turn%2 == 1 {
@@ -31,15 +35,16 @@ func main() {
 			fmt.Println("Player " + strconv.Itoa(player) + " turn")
 			selectedMove = promptForMove()
 		}
-		if selectedMove == 9 {
-			return
-		}
 
 		board = executeMove(selectedMove, player, board)
 
 		result := checkBoardForAWinner(board)
 		if result > 0 {
 			fmt.Printf("Player %d wins!\n\n", result)
+
+			// Save to last winner file
+			setLastWinner(result)
+
 			gameOver = true
 		} else if turn == 9 {
 			// Tie game example: 0 2 1 3 4 7 5 8 6
@@ -50,6 +55,10 @@ func main() {
 			cmd := exec.Command("clear") //Linux example, its tested
 			cmd.Stdout = os.Stdout
 			cmd.Run()
+		}
+
+		if lastWinner > 0 {
+			fmt.Printf("Player %d won the last game!\n\n", lastWinner)
 		}
 	}
 }
@@ -77,7 +86,8 @@ func drawBoard(board [9]int) {
 }
 
 func promptForMove() int {
-	fmt.Println("Select a move")
+	fmt.Println("Select a move [0-8]")
+
 	var move int
 	fmt.Scan(&move)
 
@@ -85,6 +95,11 @@ func promptForMove() int {
 }
 
 func executeMove(currentMove int, player int, board [9]int) [9]int {
+	for currentMove > 8 {
+		fmt.Println("Please select a tile that exists. There are only 9 tiles.")
+		currentMove = promptForMove()
+	}
+
 	if board[currentMove] != 0 {
 		fmt.Println("That tile (" + strconv.Itoa(currentMove) + ") is already selected. Please select another one.")
 		currentMove := promptForMove()
@@ -93,11 +108,6 @@ func executeMove(currentMove int, player int, board [9]int) [9]int {
 		board[currentMove] = 1
 	} else if player == 2 {
 		board[currentMove] = 10
-	}
-
-	for currentMove > 9 {
-		fmt.Println("Please select a tile that exists. There are only 9 tiles.")
-		currentMove = promptForMove()
 	}
 
 	return board
@@ -249,4 +259,23 @@ func possibleSelections(iteration int) [3]int {
 	}
 
 	return [3]int{0, 0, 0}
+}
+
+func setLastWinner(player int) {
+	s := fmt.Sprintf("%d", player)
+	ioutil.WriteFile("last-winner", []byte(s), 0644)
+}
+
+func getLastWinner() int {
+	content, err := ioutil.ReadFile("last-winner")
+	if err != nil {
+		return 0
+	}
+
+	player, err := strconv.Atoi(string(content))
+	if err != nil {
+		return 0
+	}
+
+	return player
 }
