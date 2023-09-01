@@ -31,11 +31,18 @@ func main() {
 		}
 
 		selectedMove := 9
+
+		// Randomize who goes first
+		if turn == 1 {
+			rand.Seed(time.Now().UnixNano())
+			player = rand.Intn(2)
+			print("Player " + strconv.Itoa(player) + " goes first!\n\n")
+		}
+
 		if player == 1 {
-			selectedMove = botMove(turn, player, board)
-		} else {
-			fmt.Println("Player " + strconv.Itoa(player) + " turn")
 			selectedMove = promptForMove()
+		} else {
+			selectedMove = botMove(turn, player, board)
 		}
 
 		board = executeMove(selectedMove, player, board)
