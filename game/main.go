@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"os/exec"
 	"strconv"
+	"time"
 
 	"github.com/fatih/color"
 )
@@ -152,9 +154,26 @@ func botMove(currentTurn int, player int, board [9]int) int {
 
 	fmt.Println("Botmove!")
 
+	// If the middle is available, select it
 	if board[4] == 0 {
 		executeMove(4, player, board)
 		return 4
+	}
+
+	// If the middle is not available, select a corner
+	if currentTurn <= 2 {
+		corners := [4]int{0, 2, 6, 8}
+
+		// Shuffle the corners
+		rand.Seed(time.Now().UnixNano())
+		rand.Shuffle(len(corners), func(i, j int) { corners[i], corners[j] = corners[j], corners[i] })
+
+		for _, value := range corners {
+			if board[value] == 0 {
+				executeMove(value, player, board)
+				return value
+			}
+		}
 	}
 
 	if player == 2 {
@@ -227,14 +246,20 @@ func botMove(currentTurn int, player int, board [9]int) int {
 		}
 	}
 
+	// If all else fails, select random available tile
+	availableTiles := []int{}
+
 	for i := range board {
 		if board[i] == 0 {
-			executeMove(i, player, board)
-			return i
+			availableTiles = append(availableTiles, i)
 		}
 	}
 
-	return 9
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(availableTiles), func(i, j int) { availableTiles[i], availableTiles[j] = availableTiles[j], availableTiles[i] })
+
+	executeMove(availableTiles[0], player, board)
+	return availableTiles[0]
 }
 
 func possibleSelections(iteration int) [3]int {
